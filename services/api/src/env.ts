@@ -4,9 +4,9 @@ const requiredEnvVars = {
 
 export const validateEnvVars = (env: Record<string, string>) => {
 	const envVars = Object.keys(requiredEnvVars);
-	for(let i = 0; i < envVars.length; i++) {
-		if (!env[envVars[i]]) {
-			throw new Error(`Env var ${envVars[i]} is required to run API service`);
+	for(const envVar of envVars) {
+		if (!env[envVar]) {
+			throw new Error(`Env var ${env[envVar]} is required to run API service`);
 		}
 	}
 }
