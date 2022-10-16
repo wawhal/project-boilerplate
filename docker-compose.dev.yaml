@@ -1,0 +1,41 @@
+version: '3.6'
+services:
+  postgres:
+    image: postgres:12
+    restart: always
+    volumes:
+    - db_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+  api:
+    build: ./services/api
+    restart: always
+    environment:
+      PORT: ${API_INTERNAL_PORT}
+      HASURA_URL: http://hasura:${DATA_INTERNAL_PORT}
+  hasura:
+    build: ./services/hasura
+    ports:
+    - 6300:8080
+    depends_on:
+    - "postgres"
+    - "api"
+    restart: always
+    environment:
+      HASURA_GRAPHQL_METADATA_DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB_NAME}
+      PG_DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB_NAME}
+      HASURA_GRAPHQL_ENABLE_CONSOLE: "true"
+      HASURA_GRAPHQL_DEV_MODE: "true"
+      HASURA_GRAPHQL_ENABLED_LOG_TYPES: startup, http-log, webhook-log, websocket-log, query-log
+      HASURA_GRAPHQL_ADMIN_SECRET: randomsecret
+      API_URL: http://api:${API_INTERNAL_PORT}
+  dashboard:
+    build: ./services/dashboard
+    restart: always
+    ports:
+      - 6400:80
+    environment:
+      HASURA_URL: http://localhost:6300
+volumes:
+  db_data:
+
